@@ -1,0 +1,36 @@
+So in python client server code, the client will send a string of input in this case "private <ID of receiver> <message to be sent>" Now I made an if and else statement like if 'message == "list"', 'message == "changeID"', and such. How do I write the elif for when the client types in  "private <ID of receiver> <message to be sent>" ?
+
+
+
+Certainly! To handle the case when the client sends a message in the format "private <ID of receiver> <message to be sent>", you can extract the relevant parts of the input and process them accordingly. Here's how you can write the `elif` block for this scenario:
+
+```python
+# Assuming `message` contains the input from the client
+message = "private 12345 Hello, this is a private message."
+
+# Split the message into words
+words = message.split()
+
+# Check if the message starts with "private" and has at least three words
+if len(words) >= 3 and words[0].lower() == "private":
+    receiver_id = words[1]  # Extract the receiver ID
+    private_message = " ".join(words[2:])  # Extract the message content
+
+    # Now you can handle the private message:
+    # - Send it to the receiver with the specified ID
+    # - Store it in a database
+    # - Perform any other necessary actions
+
+    print(f"Private message to {receiver_id}: {private_message}")
+else:
+    # Handle other cases (e.g., "list", "changeID", etc.)
+    # ...
+```
+
+In the above code snippet:
+- We split the input message into words using `split()`.
+- We check if the first word is "private" (case-insensitive) and if there are at least three words in the message.
+- If so, we extract the receiver ID and the message content.
+- You can replace the `print` statement with your actual logic for handling private messages (e.g., sending them to the receiver).
+
+Remember to adapt this code to your specific use case and integrate it into your client-server application. Happy coding! 🚀🐍
