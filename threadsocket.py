@@ -19,7 +19,6 @@ def clientthread(conn, addr):
             message = conn.recv(2048).decode()
             if message:
                 print(f"Received message from <{addr[0]}>: {message}")
-                print(message)
                 
                 match = re.match(r"(\d+)\s*([\+\-\*\/])\s*(\d+)", message)
                 if match:
@@ -41,27 +40,48 @@ def clientthread(conn, addr):
                         message_to_send = f"{num1}{operator}{num2}={result}\n".encode()
                     else:
                         message_to_send = "Invalid operation.\n".encode()
-                #elif message == "changeID": #added changeID
-## trying to add something here where the server will ask the client what unique ID the client want
-                elif message == "list":
-## if list, then I want to print all the stored ID in idlist which I've made below
+                    print(f"Sending: {message_to_send.decode()}")
+                    broadcast(message_to_send, conn)
+                
+                elif message.strip().lower() == "list":
+
                     client_list = get_list_of_client()
-                    conn.send(str(client_list).encode())
-               #elif message == "private": I'm thinking maybe place this on top so they can check for prIvate first
-               ##in ordder to do that, we do something similar to the arithmetic part where it checks for the signs but with "private"
+                    print(client_list)
+                    try:
+                        client_list_str = '\n'.join(client_list) +'\n'  
+                        sent_bytes = conn.send(client_list_str.encode())
+                        print(f"Sent {sent_bytes} bytes back to the sender.")
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                elif message.startswith("changeid "):
+                    new_client_id = message.split("changeid ")[1].strip()
+                    for i, client in enumerate(list_of_client):
+                        if client[0] == conn:
+                            print(f"change {client[0]} to {new_client_id}")
+                            list_of_client[i] = (conn, new_client_id)
+                            conn.send(f"Your assigned client ID is now {new_client_id}\n".encode())
+                            break
                 else:                    
                     message_to_send = message.encode()
+                    print(f"Sending: {message_to_send.decode()}")
+                    broadcast(message_to_send, conn)
                 
                 
-                print(f"Sending: {message_to_send.decode()}")
-                broadcast(message_to_send, conn)
+                
 
             else:
                 remove(conn)
         except Exception as e:
             print(f"An error occurred: {e}")
             continue
-
+def broadcast2(message, connection):
+    for clients in list_of_client:
+        if clients[0] == connection:
+            try:
+                clients[0].send(message)
+            except:
+                clients[0].close()
+                remove(clients[0])
 def broadcast(message, connection):
     for clients in list_of_client:
         if clients[0] != connection:
@@ -83,6 +103,11 @@ def generate_clientID():
 def get_list_of_client():
     return [nickname for _, nickname in list_of_client]
 
+def change_client_id(conn, new_client_id):
+    for i, client in enumerate(list_of_client):
+        if client[0] == conn:
+            list_of_client[i] = (conn, new_client_id)
+            break
 while True:
     conn, addr = server.accept()
     client_id = generate_clientID()
