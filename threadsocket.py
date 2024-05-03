@@ -54,6 +54,7 @@ def clientthread(conn, addr):
                     except Exception as e:
                         print(f"An error occurred: {e}")
                 elif message.startswith("changeid "):
+                    
                     new_client_id = message.split("changeid ")[1].strip()
                     for i, client in enumerate(list_of_client):
                         if client[0] == conn:
@@ -61,6 +62,19 @@ def clientthread(conn, addr):
                             list_of_client[i] = (conn, new_client_id)
                             conn.send(f"Your assigned client ID is now {new_client_id}\n".encode())
                             break
+                elif message.startswith("private "):
+                    for _, client_id in list_of_client:
+                        match2 = re.match(fr"^private \s*({client_id}) (.*)$", message)
+                        if match2:
+                            receiver_id = match2.group(1)
+                            content = match2.group(2)
+                            print(f"Sending private message to {receiver_id}: {content}")
+                            for client_socket,client_id in list_of_client:
+                                if client_id == receiver_id:
+                                    client_socket.send(f"You receive a message {content}\n".encode())
+    
+                    
+                    
                 else:                    
                     message_to_send = message.encode()
                     print(f"Sending: {message_to_send.decode()}")
