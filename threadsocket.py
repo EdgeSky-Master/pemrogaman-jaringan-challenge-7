@@ -41,9 +41,14 @@ def clientthread(conn, addr):
                         message_to_send = f"{num1}{operator}{num2}={result}\n".encode()
                     else:
                         message_to_send = "Invalid operation.\n".encode()
+                #elif message == "changeID": #added changeID
+## trying to add something here where the server will ask the client what unique ID the client want
                 elif message == "list":
+## if list, then I want to print all the stored ID in idlist which I've made below
                     client_list = get_list_of_client()
                     conn.send(str(client_list).encode())
+               #elif message == "private": I'm thinking maybe place this on top so they can check for prIvate first
+               ##in ordder to do that, we do something similar to the arithmetic part where it checks for the signs but with "private"
                 else:                    
                     message_to_send = message.encode()
                 
@@ -81,6 +86,8 @@ def get_list_of_client():
 while True:
     conn, addr = server.accept()
     client_id = generate_clientID()
+    #idlist = [] ##added idlist for saving all the client IDs
+    #idlist.append(client_id) ## using append to save in the next available space in the array
     list_of_client.append((conn, client_id))
     conn.send(f"Your assigned client ID is {client_id}\n".encode())
     
