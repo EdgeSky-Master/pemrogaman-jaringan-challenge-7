@@ -11,6 +11,7 @@ port = 8081
 server.bind((ip_address, port))
 server.listen(100)
 list_of_client = []
+counter = 0
 
 def clientthread(conn, addr):
     while True:
@@ -18,6 +19,7 @@ def clientthread(conn, addr):
             message = conn.recv(2048).decode()
             if message:
                 print(f"Received message from <{addr[0]}>: {message}")
+                print(message)
                 
                 match = re.match(r"(\d+)\s*([\+\-\*\/])\s*(\d+)", message)
                 if match:
@@ -39,8 +41,10 @@ def clientthread(conn, addr):
                         message_to_send = f"{num1}{operator}{num2}={result}\n".encode()
                     else:
                         message_to_send = "Invalid operation.\n".encode()
-                else:
-                    
+                elif message == "list":
+                    client_list = get_list_of_client()
+                    conn.send(str(client_list).encode())
+                else:                    
                     message_to_send = message.encode()
                 
                 
@@ -55,19 +59,31 @@ def clientthread(conn, addr):
 
 def broadcast(message, connection):
     for clients in list_of_client:
-        if clients!=connection:
+        if clients[0] != connection:
             try:
-                clients.send(message)
+                clients[0].send(message)
             except:
-                clients.close()
-                remove(clients)
+                clients[0].close()
+                remove(clients[0])
 def remove(connection):
     if connection in list_of_client:
         list_of_client.remove(connection)
 
+def generate_clientID():
+    global counter
+    counter +=1
+    client_id = f"client{counter}"
+    
+    return client_id
+def get_list_of_client():
+    return [nickname for _, nickname in list_of_client]
+
 while True:
     conn, addr = server.accept()
-    list_of_client.append(conn)
+    client_id = generate_clientID()
+    list_of_client.append((conn, client_id))
+    conn.send(f"Your assigned client ID is {client_id}\n".encode())
+    
     print(addr[0] + " connected")
     threading.Thread(target=clientthread,args=(conn,addr)).start()
 
