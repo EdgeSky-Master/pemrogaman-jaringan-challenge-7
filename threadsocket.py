@@ -72,7 +72,7 @@ def clientthread(conn, addr):
                             for client_socket,client_id in list_of_client:
                                 if client_id == receiver_id:
                                     client_socket.send(f"You receive a message {content}\n".encode())
-    
+                                    break
                     
                     
                 else:                    
